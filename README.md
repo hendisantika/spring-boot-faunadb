@@ -1,0 +1,1 @@
+# spring-boot-faunadb
