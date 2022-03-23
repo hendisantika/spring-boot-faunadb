@@ -64,4 +64,26 @@ public class PostsService {
         var posts = postsResult.at("data").asCollectionOf(Value.class).get();
         return posts.stream().map(this::parsePost).collect(Collectors.toList());
     }
+
+    List<Post> getAuthorPosts(String author) throws ExecutionException, InterruptedException {
+        var postsResult = faunaClient.query(Map(
+                Paginate(
+                        Join(
+                                Match(Index("posts_by_author"), Select(Value("ref"), Get(Match(Index(
+                                        "users_by_username"), Value(author))))),
+                                Index("posts_sort_by_created_desc")
+                        )
+                ),
+                Lambda(
+                        Arr(Value("extra"), Value("ref")),
+                        Obj(
+                                "post", Get(Var("ref")),
+                                "author", Get(Select(Arr(Value("data"), Value("authorRef")), Get(Var("ref"))))
+                        )
+                )
+        )).get();
+
+        var posts = postsResult.at("data").asCollectionOf(Value.class).get();
+        return posts.stream().map(this::parsePost).collect(Collectors.toList());
+    }
 }
