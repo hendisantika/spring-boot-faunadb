@@ -5,6 +5,7 @@ import com.faunadb.client.types.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -113,5 +114,22 @@ public class PostsService {
                         )
                 )
         ).get();
+    }
+
+    private Post parsePost(Value entry) {
+        var author = entry.at("author");
+        var post = entry.at("post");
+
+        return new Post(
+                post.at("ref").to(Value.RefV.class).get().getId(),
+                post.at("data", "title").to(String.class).get(),
+                post.at("data", "contents").to(String.class).get(),
+                new Author(
+                        author.at("data", "username").to(String.class).get(),
+                        author.at("data", "name").to(String.class).get()
+                ),
+                post.at("data", "created").to(Instant.class).get(),
+                post.at("ts").to(Long.class).get()
+        );
     }
 }
