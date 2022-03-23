@@ -102,4 +102,16 @@ public class PostsService {
                 )
         ).get();
     }
+
+    public void updatePost(String id, String title, String contents) throws ExecutionException, InterruptedException {
+        faunaClient.query(
+                Update(Ref(Collection("posts"), id),
+                        Obj(
+                                "data", Obj(
+                                        "title", Value(title),
+                                        "contents", Value(contents))
+                        )
+                )
+        ).get();
+    }
 }
