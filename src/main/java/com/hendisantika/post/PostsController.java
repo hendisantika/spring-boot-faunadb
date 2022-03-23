@@ -2,6 +2,7 @@ package com.hendisantika.post;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,5 +28,11 @@ public class PostsController {
     @GetMapping
     public List<Post> listPosts(@RequestParam(value = "author", required = false) String author) throws ExecutionException, InterruptedException {
         return author == null ? postsService.getAllPosts() : postsService.getAuthorPosts("naruto");
+    }
+
+    @GetMapping("/{id}")
+    public Post getPost(@PathVariable("id") String id, @RequestParam(value = "before", required = false) Long before)
+            throws ExecutionException, InterruptedException {
+        return postsService.getPost(id, before);
     }
 }
