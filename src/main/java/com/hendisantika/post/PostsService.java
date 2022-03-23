@@ -86,4 +86,20 @@ public class PostsService {
         var posts = postsResult.at("data").asCollectionOf(Value.class).get();
         return posts.stream().map(this::parsePost).collect(Collectors.toList());
     }
+
+    public void createPost(String author, String title, String contents) throws ExecutionException,
+            InterruptedException {
+        faunaClient.query(
+                Create(Collection("posts"),
+                        Obj(
+                                "data", Obj(
+                                        "title", Value(title),
+                                        "contents", Value(contents),
+                                        "created", Now(),
+                                        "authorRef", Select(Value("ref"), Get(Match(Index("users_by_username"),
+                                                Value(author)))))
+                        )
+                )
+        ).get();
+    }
 }
