@@ -1,5 +1,6 @@
 package com.hendisantika.post;
 
+import com.faunadb.client.errors.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,4 +52,8 @@ public class PostsController {
         postsService.updatePost(id, post.title(), post.content());
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public void postNotFound() {
+    }
 }
