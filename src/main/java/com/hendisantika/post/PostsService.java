@@ -1,10 +1,13 @@
 package com.hendisantika.post;
 
 import com.faunadb.client.FaunaClient;
+import com.faunadb.client.types.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static com.faunadb.client.query.Language.*;
 
@@ -39,5 +42,26 @@ public class PostsService {
                 )).get();
 
         return parsePost(postResult);
+    }
+
+    List<Post> getAllPosts() throws ExecutionException, InterruptedException {
+        var postsResult = faunaClient.query(Map(
+                Paginate(
+                        Join(
+                                Documents(Collection("posts")),
+                                Index("posts_sort_by_created_desc")
+                        )
+                ),
+                Lambda(
+                        Arr(Value("extra"), Value("ref")),
+                        Obj(
+                                "post", Get(Var("ref")),
+                                "author", Get(Select(Arr(Value("data"), Value("authorRef")), Get(Var("ref"))))
+                        )
+                )
+        )).get();
+
+        var posts = postsResult.at("data").asCollectionOf(Value.class).get();
+        return posts.stream().map(this::parsePost).collect(Collectors.toList());
     }
 }
